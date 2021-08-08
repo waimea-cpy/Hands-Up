@@ -13,6 +13,10 @@
     echo   '</ol>';
     echo '</section>';
 
+    if( !$teacher ) {
+        echo '<section id="position"></section>';
+    }
+
     echo '<section id="controls">';
 
     if( $teacher ) {
@@ -31,12 +35,10 @@
     <script src="scripts/request.js"></script>
 
     <script>
-        getStatus();
-        getQueue( '<?= $ip ?>', <?= $teacher ?> );
+        getStatus( '<?= $ip ?>', <?= $teacher ?> );
 
         var timer = setInterval( function() {
-            getStatus();
-            getQueue( '<?= $ip ?>', <?= $teacher ?> );
+            getStatus( '<?= $ip ?>', <?= $teacher ?> );
         }, <?= $teacher ? 2500 : 10000 ?> );
     </script>
 

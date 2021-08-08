@@ -1,0 +1,22 @@
+{
+    "name": "Hand Up",
+    "short_name": "Hand Up",
+    "theme_color": "#03a9f4",
+    "background_color": "#03a9f4",
+    "display": "standalone",
+    "orientation": "portrait",
+    "scope": "/handup/",
+    "start_url": "/handup/index.php",
+    "icons": [ 
+        {
+            "src": "android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

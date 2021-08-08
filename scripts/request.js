@@ -1,8 +1,8 @@
-let previousQueue = null;
+let previousQueueJSON = null;
 
 
 
-function getStatus() {
+function getStatus( ipAddr, teacher ) {
     // console.log( 'Requesting status...' );
 
     const request = new XMLHttpRequest();
@@ -18,7 +18,9 @@ function getStatus() {
             const active = status[0].active;
 
             const onoff = document.getElementById( 'onoff' );
-            if( onoff ) onoff.checked = active;
+            onoff.checked = active;
+
+            getQueue( ipAddr, teacher );
         }
     };
 }
@@ -106,49 +108,70 @@ function getQueue( ipAddr, teacher ) {
             // console.log( 'Queue received: ' + queueJSON );
             const queue = JSON.parse( queueJSON );
 
-            let inQueue = false;
             const queueList = document.getElementById( 'bookings' );
-            const add = document.getElementById( 'addbutton' );
-            const rem = document.getElementById( 'removebutton' );
-            const status = document.getElementById( 'status' );
-            const onoff  = document.getElementById( 'onoff' );
-            const active = onoff.checked;
+            const addButt  = document.getElementById( 'addbutton' );
+            const remButt  = document.getElementById( 'removebutton' );
+            const position = document.getElementById( 'position' );
+            const status   = document.getElementById( 'status' );
+            const onoff    = document.getElementById( 'onoff' );
+            const active  = onoff.checked;
+            const nowTime = new Date();
+            let inQueue  = false;
+            let queuePos = 0;
+            let posCount = 0;
 
-            // console.log( 'Previous: ' + previousQueue );
-            // console.log( 'Queue: ' + queueJSON );
+            // Map queue to new array including times to see if any have rolled over
+            const processedQueue = queue.map( booking => {
+                posCount++;
 
-            if( queueJSON != previousQueue ) {
+                const bookingTime = new Date( booking.time );
+                const diffTimeMS = nowTime.getTime() - bookingTime.getTime();
+                const diffMins = Math.floor( diffTimeMS / 1000 / 60 );
+                const age = diffMins >= 10 ? 5 : Math.floor( diffMins / 2 );
+
+                booking.age = age;
+                booking.mins = diffMins;
+
+                if( booking.ip == ipAddr ) {
+                    inQueue = true;
+                    queuePos = posCount;
+                }
+
+                return booking;
+            } );
+
+            // To JSON for string comparison
+            const processedQueueJSON = JSON.stringify( processedQueue );
+            const numBookings = processedQueue.length;
+
+            // console.log( 'Previous: ' + previousQueueJSON );
+            // console.log( 'Queue: ' + processedQueueJSON );
+
+            if( processedQueueJSON != previousQueueJSON ) {
                 // console.log( 'New Queue!' );
                 // Save the new queue
-                previousQueue = queueJSON;
+                previousQueueJSON = processedQueueJSON;
 
                 // Clear out the queue list
                 queueList.innerHTML = '';
 
-                const numBookings = queue.length;
-                // console.log( numBookings + ' bookings in queue' );
-
-                queue.forEach( booking => {
+                processedQueue.forEach( booking => {
                     // console.log( booking.fullname + ' at ' + booking.time );
-
-                    const bookingTime = new Date( booking.time );
-                    const nowTime = new Date();
-                    const diffTimeMS = nowTime.getTime() - bookingTime.getTime();
-                    const diffMins = Math.floor( diffTimeMS / 1000 / 60 );
-                    const age = diffMins >= 10 ? 5 : Math.floor( diffMins / 2 );
-
                     const slot = document.createElement( 'li' );
                     slot.classList.add( 'slot' );
                     slot.classList.add( 'booking' );
-                    slot.classList.add( 'age-' + age );
+                    slot.classList.add( 'age-' + booking.age );
                     
                     const name = document.createElement( 'span' );
                     name.classList.add( 'name' );
                     name.innerHTML = booking.fullname;
-
+                    if( teacher ) {
+                        name.title = booking.ip;
+                        name.addEventListener( 'click', () => { copyClip( booking.ip ); } );
+                    }
                     const time = document.createElement( 'span' );
                     time.classList.add( 'time' );
-                    time.innerHTML = diffMins + (diffMins == 1 ? ' min' : ' mins') + ' ago';
+                    time.innerHTML = booking.mins + (booking.mins == 1 ? ' min' : ' mins') + ' ago';
 
                     const controls = document.createElement( 'span' );
                     controls.classList.add( 'controls' );
@@ -171,8 +194,6 @@ function getQueue( ipAddr, teacher ) {
                     slot.appendChild( controls );
 
                     queueList.appendChild( slot );
-
-                    if( booking.ip == ipAddr ) inQueue = true;
                 } );
 
                 for( let i = 0; i < 10 - numBookings; i++ ) {
@@ -184,27 +205,50 @@ function getQueue( ipAddr, teacher ) {
 
             if( active ) {
                 queueList.classList.add( 'active' );
-                status.innerText = '';
 
-                if( inQueue ) {
-                    if( add ) add.style.display = 'none';
-                    if( rem ) rem.style.display = 'flex';
-                    if( !teacher ) status.innerText = 'You are waiting in the queue';
+                if( teacher ) {
+                    status.innerText = '';
+                    window.document.title = numBookings + (numBookings == 1 ? ' Hand' : ' Hands') + ' Up!';
                 }
                 else {
-                    if( add ) add.style.display = 'flex';
-                    if( rem ) rem.style.display = 'none';
-                    if( !teacher ) status.innerText = 'You are not yet in the queue';
+                    if( inQueue ) {
+                        addButt.style.display = 'none';
+                        remButt.style.display = 'flex';
+                        position.innerHTML = queuePos;
+                        position.style.display = 'flex';
+                        status.innerText = 'You are in the queue';
+                        window.document.title = 'Hand Up! (' + queuePos + ')';
+                    }
+                    else {
+                        addButt.style.display = 'flex';
+                        remButt.style.display = 'none';
+                        position.innerHTML = '';
+                        position.style.display = 'none';
+                        status.innerText = 'You are not yet in the queue';
+                        window.document.title = 'Hand Up!';
+                    }
                 }
             }
             else {
                 queueList.classList.remove( 'active' );
 
-                if( add ) add.style.display = 'none';
-                if( rem ) rem.style.display = 'none';
+                if( addButt ) addButt.style.display = 'none';
+                if( remButt ) remButt.style.display = 'none';
+                if( position ) { 
+                    position.innerHTML = ''; 
+                    position.style.display = 'none';
+                }
                 status.innerText = 'The queue is currently paused';
+                window.document.title = 'Hand Up!';
             }
         }
     };
 }
 
+function copyClip( text ) {
+    navigator.clipboard.writeText( text ).then( function() {
+        console.log( '"' + text + '" copied to clipboard' );
+    }, function( err ) {
+        console.error( 'Could not copy text: ', err );
+    } );
+} 

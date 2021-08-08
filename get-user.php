@@ -1,23 +1,30 @@
 <?php
 
     include_once 'common-functions.php';
+    include_once 'common-info.php';
     include_once 'common-top.php';
-    
-    echo '<h2>Tell us who you are...</h2>';
+?>
 
-    $ip = $_SERVER['REMOTE_ADDR'];
+    <h2>Tell us who you are...</h2>
 
-    echo '<form action="save-user.php" method="post">';
+    <section class="group">
+        <p>If you have an account on the DT server...<p>
 
-    echo   '<label for="fullname">What is your full name?</label> ';
-    echo   '<input type="text" name="fullname" placeholder="e.g. Tane Smith" required>';
+        <a href="/login.php?next=handup" class="button">Login</a>
+    </section>
 
-    echo   '<input type="submit" value="Next">';
+    <section class="group">
+        <p>If you don't have an account on the server...</p>
 
-    echo '</form>';
+        <form action="save-user.php" method="post">
+            <label for="fullname">What is your full name?</label>
+            <input type="text" name="fullname" placeholder="e.g. Tane Smith" required>
+            <input type="submit" value="Next">
+        </form>
 
-    echo '<p>Note, we have the address of your computer: <span class="ip">'.$ip.'</span></p>';
+        <p>The address of your computer is: <span class="ip"><?= $ip ?></span><br>(this can be used to identify you)</p>
+    </section>
 
+<?php
     include_once 'common-bottom.php';
-
 ?>

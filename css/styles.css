@@ -1,25 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
 :root {
     --mobile-width: 30rem;
+
+    --primary:   #01579B;
+    --accent:    #BF360C;
+    --accent-hi: #FF5722;
+    --text-dark: #111;
+    --text-high: #fff;
+    --shadow:    #00000080;
+    --glow:      #ffffff40;
+    --border:    #B0BEC5;
+
     --page-back: #263238;
     --body-back: #fff;
-    --body-text: #111;
-    --head-back: #01579B;
-    --head-text: #fff;
+    --body-text: var(--text-dark);
+    --head-back: var(--primary);
+    --head-text: var(--text-high);
     --togg-back: #B0BEC5;
     --togg-glow: #FFAB91;
     --togg-flip: #ECEFF1;
-    --togg-flop: #FF5722;
+    --togg-flop: var(--accent-hi);
     --list-back: #FBE9E7;
     --list-free: #CFD8DC;
-    --list-text: #111;
+    --list-text: var(--text-dark);
     --list-numb: #CFD8DC;
-    --butt-back: #01579B;
+    --butt-back: var(--primary);
     --butt-care: #B71C1C;
     --butt-done: #558B2F;
-    --butt-text: #fff;
-    --accent: #BF360C;
-    --shadow: #00000080;
-    --glow:   #ffffff40;
+    --butt-text: var(--text-high);
+    --posn-back: var(--primary);
+    --posn-text: var(--text-high);
     --age-5: #FF5722;
     --age-4: #FF7043;
     --age-3: #FF8A65;
@@ -45,13 +56,23 @@ body {
     position: relative;
     color: var(--body-text);
     background: var(--body-back);
-    font-family: sans-serif;
+    font-family: Roboto, sans-serif;
+    font-weight: 400;
     max-width: var(--mobile-width);
     margin: 0 auto;
-    height: 92vh;
+    /* height: 92vh; */
+    height: 100vh;
     display: flex;
     flex-direction: column;
     box-shadow: 0 1rem 2rem var(--shadow);
+}
+
+p {
+    margin: 0.5em 0 1rem;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 700;
 }
 
 header {
@@ -138,6 +159,32 @@ form input {
 form input[type="text"] {
     font-size: 1.3rem;
     width: 100%;
+}
+
+form input[type="submit"],
+a.button {
+    display: block;
+    width: max-content;
+    font-size: 1.2rem;
+    padding: 0.3rem 0.5rem;
+    background: var(--accent);
+    color: var(--butt-text);
+    border: none;
+    border-radius: 0.3rem;
+    text-decoration: none;
+    font-weight: normal;
+    box-shadow: 0 0.1rem 0.2rem var(--shadow);
+}
+
+form input[type="submit"]:hover,
+a.button:hover {
+    background: var(--accent-hi);
+    cursor: pointer;
+}
+
+section.group {
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
 }
 
 .ip {
@@ -247,11 +294,12 @@ form input[type="text"] {
     opacity: 0.8;
 }
 
-
 .name {
-    /* font-weight: bold; */
     flex: 1;
     font-size: 1.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .time {
@@ -302,6 +350,22 @@ form input[type="text"] {
     display: flex;
 }
 
+#position {
+    position: absolute;
+    bottom: 25%;
+    left: calc((100% - 10rem) / 2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 10rem;
+    height: 10rem;
+    border-radius: 10rem;
+    font-size: 6rem;
+    font-weight: 700;
+    color: var(--posn-text);
+    background: var(--posn-back);
+    box-shadow: 0 0.3rem 0.6rem var(--shadow);
+}
 
 #controls {
     position: absolute;
@@ -356,4 +420,9 @@ form input[type="text"] {
         margin: 1.5rem auto;
         height: calc(100vh - 3rem);
     }
+
+    .name {
+        font-size: 1.4rem;
+    }
+
 }
