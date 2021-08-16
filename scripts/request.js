@@ -77,6 +77,33 @@ function removeBooking( ipAddr, teacher ) {
 }
 
 
+function blockIP( ipAddr, teacher, perm ) {
+    // console.log( 'Blocking IP)...' ); 
+    // console.log( 'IP: ' + ipAddr );
+
+    const request = new XMLHttpRequest();
+    const url = (perm ? 'block-ip.php' : 'freeze-ip.php') + '?ip=' + ipAddr;
+    request.open( 'GET', url );
+    request.send();
+
+    request.onreadystatechange = () => {
+        if( request.readyState == 4 && request.status == 200 ) {
+            removeBooking( ipAddr, teacher );
+        }
+    };
+}
+
+
+function unblockIP( ipAddr ) {
+    // console.log( 'Unblocking IP)...' ); 
+    // console.log( 'IP: ' + ipAddr );
+
+    const request = new XMLHttpRequest();
+    request.open( 'GET', 'unblock-ip.php?ip=' + ipAddr );
+    request.send();
+}
+
+
 function clearQueue() {
     // console.log( 'Clearing queue...' ); 
 
@@ -95,6 +122,53 @@ function clearQueue() {
 
 function getQueue( ipAddr, teacher ) {
     // console.log( 'IP: ' + ipAddr );
+    // console.log( 'Requesting blocklist...' );
+
+    const request = new XMLHttpRequest();
+    const url = 'get-blocklist.php';
+    request.open( 'GET', url );
+    request.send();
+
+    request.onreadystatechange = () => {
+        if( request.readyState == 4 && request.status == 200 ) {
+            const blocklistJSON = request.responseText;
+            // console.log( 'Blocklist received: ' + blocklistJSON );
+            const blocklist = JSON.parse( blocklistJSON );
+
+            const nowTime = new Date();
+            let isBlocked = false;
+            let isFrozen = false;
+
+            blocklist.forEach( blocked => {
+                if( teacher ) {
+                    // Check is just frozen
+                    if( !blocked.perm ) {
+                        const blockTime = new Date( blocked.time );
+                        const diffTimeMS = nowTime.getTime() - blockTime.getTime();
+                        const diffMins = Math.floor( diffTimeMS / 1000 / 60 );
+
+                        // Unfreeze if 5mins has gone by
+                        if( diffMins >= 5 ) {
+                            unblockIP( blocked.ip );
+                        }
+                    }
+                }
+                else if( blocked.ip == ipAddr ) {
+                    // console.log( "BLOCKED!");
+                    isBlocked = blocked.perm;
+                    isFrozen = !blocked.perm;
+                }    
+            } );
+
+            getBookings( ipAddr, teacher, isBlocked, isFrozen );
+        }
+    };
+}
+
+
+function getBookings( ipAddr, teacher, blocked, frozen ) {
+    // console.log( 'IP: ' + ipAddr );
+    // console.log( 'Blocked: ' + blocked );
     // console.log( 'Requesting queue...' );
 
     const request = new XMLHttpRequest();
@@ -181,11 +255,31 @@ function getQueue( ipAddr, teacher ) {
                         remove.classList.add( 'done' );
                         remove.href = '#';
                         remove.addEventListener( 'click', () => { removeBooking( booking.ip, true ); } );
-                        const cross = document.createElement( 'span' );
-                        cross.classList.add( 'iconify' );
-                        cross.dataset.icon = 'mdi-check';
+                        const removeIcon = document.createElement( 'span' );
+                        removeIcon.classList.add( 'iconify' );
+                        removeIcon.dataset.icon = 'mdi-check';
+                        remove.appendChild( removeIcon );
                         
-                        remove.appendChild( cross );
+                        const freeze = document.createElement( 'a' );
+                        freeze.classList.add( 'warn' );
+                        freeze.href = '#';
+                        freeze.addEventListener( 'click', () => { if( confirm( 'Freeze IP ' + booking.ip + '... Are you sure?' ) ) blockIP( booking.ip, true, false ); } );
+                        const freezeIcon = document.createElement( 'span' );
+                        freezeIcon.classList.add( 'iconify' );
+                        freezeIcon.dataset.icon = 'mdi-snowflake';
+                        freeze.appendChild( freezeIcon );
+                        
+                        const block = document.createElement( 'a' );
+                        block.classList.add( 'bad' );
+                        block.href = '#';
+                        block.addEventListener( 'click', () => { if( confirm( 'Block IP ' + booking.ip + '... Are you sure?' ) ) blockIP( booking.ip, true, true ); } );
+                        const blockIcon = document.createElement( 'span' );
+                        blockIcon.classList.add( 'iconify' );
+                        blockIcon.dataset.icon = 'mdi-cancel';
+                        block.appendChild( blockIcon );
+                        
+                        controls.appendChild( block );
+                        controls.appendChild( freeze );
                         controls.appendChild( remove );
                     }
 
@@ -203,7 +297,9 @@ function getQueue( ipAddr, teacher ) {
                 }
             }
 
-            if( active ) {
+            // console.log( 'Active: ' + active );
+
+            if( active && !blocked && !frozen ) {
                 queueList.classList.add( 'active' );
 
                 if( teacher ) {
@@ -216,6 +312,8 @@ function getQueue( ipAddr, teacher ) {
                         remButt.style.display = 'flex';
                         position.innerHTML = queuePos;
                         position.style.display = 'flex';
+                        position.classList.remove( 'bad' );
+                        position.classList.remove( 'warn' );
                         status.innerText = 'You are in the queue';
                         window.document.title = 'Hand Up! (' + queuePos + ')';
                     }
@@ -234,16 +332,42 @@ function getQueue( ipAddr, teacher ) {
 
                 if( addButt ) addButt.style.display = 'none';
                 if( remButt ) remButt.style.display = 'none';
-                if( position ) { 
-                    position.innerHTML = ''; 
-                    position.style.display = 'none';
-                }
+
                 status.innerText = 'The queue is currently paused';
+
+                if( position ) { 
+                    if( blocked ) {
+                        const symbol = document.createElement( 'span' );
+                        symbol.classList.add( 'iconify' );
+                        symbol.dataset.icon = 'mdi-cancel';
+                        position.innerHTML = ''; 
+                        position.appendChild( symbol );
+                        position.style.display = 'flex';
+                        position.classList.add( 'bad' );
+                        status.innerText = 'You are blocked from the queue!';
+                    }
+                    else if( frozen ) {
+                        const symbol = document.createElement( 'span' );
+                        symbol.classList.add( 'iconify' );
+                        symbol.dataset.icon = 'mdi-snowflake';
+                        position.innerHTML = ''; 
+                        position.appendChild( symbol );
+                        position.style.display = 'flex';
+                        position.classList.add( 'warn' );
+                        status.innerText = 'You are temporarily frozen out of the queue!';
+                    }
+                    else {
+                        position.innerHTML = ''; 
+                        position.style.display = 'none';
+                    }
+                }
+
                 window.document.title = 'Hand Up!';
             }
         }
     };
 }
+
 
 function copyClip( text ) {
     navigator.clipboard.writeText( text ).then( function() {

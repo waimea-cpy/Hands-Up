@@ -21,12 +21,12 @@
 
     if( $teacher ) {
         echo '<p id="status"></p>';
-        echo '<a class="action warning" href="#" onclick="if( confirm( \'Clear the queue... Are you sure?\' ) ) clearQueue();"><span class="iconify" data-icon="mdi-delete"></span></a>';
+        echo '<a class="action bad" href="#" onclick="if( confirm( \'Clear the queue... Are you sure?\' ) ) clearQueue();"><span class="iconify" data-icon="mdi-delete"></span></a>';
     }
     else {
         echo '<p id="status"></p>';
-        echo '<a id="removebutton" class="action warning" href="#" onClick="if( confirm( \'Leave the queue... Are you sure?\' ) ) removeBooking( \''.$ip.'\', false );"><span class="iconify" data-icon="mdi-minus-thick"></span></a>';
-        echo '<a id="addbutton"    class="action"         href="#" onClick="addBooking( \''.$ip.'\' );"><span class="iconify" data-icon="mdi-plus-thick"></span></a>';
+        echo '<a id="removebutton" class="action bad" href="#" onClick="if( confirm( \'Leave the queue... Are you sure?\' ) ) removeBooking( \''.$ip.'\', false );"><span class="iconify" data-icon="mdi-minus-thick"></span></a>';
+        echo '<a id="addbutton"    class="action"     href="#" onClick="addBooking( \''.$ip.'\' );"><span class="iconify" data-icon="mdi-plus-thick"></span></a>';
     }
 
     echo '</section>';

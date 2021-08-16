@@ -5,6 +5,18 @@
     include_once 'common-info.php';
     
     if( isset( $_SERVER['PHP_AUTH_USER'] ) || isset( $_SESSION['fullname'] ) ) {
-        modifyRecords( 'INSERT INTO students (ip, fullname) VALUES (?, ?)', 'ss', [$ip, $fullName] );
+        $blocklist = getRecords( 'SELECT ip, perm, time FROM blocklist' );
+        $isBlocked = false;
+
+        foreach( $blocklist as $blocked ) {
+            if( $blocked['ip'] == $ip ) {
+                $isBlocked = true;
+                break;
+            }    
+        }
+
+        if( !$isBlocked ) {
+            modifyRecords( 'INSERT INTO students (ip, fullname) VALUES (?, ?)', 'ss', [$ip, $fullName] );
+        }
     }
 ?>

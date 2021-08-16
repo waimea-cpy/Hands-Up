@@ -5,5 +5,6 @@
     
     if( $teacher ) {
         modifyRecords( 'DELETE FROM students' );
+        modifyRecords( 'DELETE FROM blocklist' );
     }
 ?>

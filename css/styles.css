@@ -26,8 +26,9 @@
     --list-text: var(--text-dark);
     --list-numb: #CFD8DC;
     --butt-back: var(--primary);
-    --butt-care: #B71C1C;
-    --butt-done: #558B2F;
+    --butt-stop: #B71C1C;
+    --butt-warn: #E65100;
+    --butt-good: #558B2F;
     --butt-text: var(--text-high);
     --posn-back: var(--primary);
     --posn-text: var(--text-high);
@@ -324,26 +325,27 @@ section.group {
     position: absolute;
     right: 0.5rem;
     display: none;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
 .controls a {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 2rem;
-    height: 2rem;
-    font-size: 1.4rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.8rem;
     line-height: 100%;
     text-decoration: none;
     color: var(--butt-text);
     background: var(--butt-back);
-    border-radius: 0.2rem;
+    border-radius: 2.2rem;
     box-shadow: 0 0.1rem 0.2rem var(--shadow);
 }
 
-.controls a.warning { background: var(--butt-care); }
-.controls a.done    { background: var(--butt-done); }
+.controls a.bad  { background: var(--butt-stop); }
+.controls a.warn { background: var(--butt-warn); }
+.controls a.done { background: var(--butt-good); }
 
 .slot.booking:active .controls,
 .slot.booking:hover .controls {
@@ -366,6 +368,10 @@ section.group {
     background: var(--posn-back);
     box-shadow: 0 0.3rem 0.6rem var(--shadow);
 }
+
+#position.bad  { background: var(--butt-stop); }
+#position.warn { background: var(--butt-warn); }
+
 
 #controls {
     position: absolute;
@@ -403,8 +409,8 @@ section.group {
     text-decoration: none;
 }
 
-#controls .action.warning {
-    background: var(--butt-care);
+#controls .action.bad {
+    background: var(--butt-stop);
 }
 
 #controls .action:hover,
